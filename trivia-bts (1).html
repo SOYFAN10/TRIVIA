@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Trivia BTS — Gana tu entrada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --violet-deep:   #2c0e52;
+    --violet-core:   #7b2ff7;
+    --violet-bright: #b57bff;
+    --lilac:         #e6d9ff;
+    --ink:           #0b0713;
+    --paper:         #f8f6ff;
+    --ok:            #35d492;
+    --bad:           #ff5c7a;
+    --radius: 20px;
+    --pad: clamp(18px, 5vw, 28px);
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    overflow-x:hidden;
+  }
+
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(123,47,247,0.45), transparent 55%),
+      radial-gradient(circle at 90% 20%, rgba(181,123,255,0.28), transparent 50%),
+      radial-gradient(circle at 50% 100%, rgba(44,14,82,0.9), transparent 60%),
+      var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 16px;
+  }
+
+  h1,h2,h3{ font-family:'Sora', sans-serif; margin:0; }
+
+  #app{
+    width:100%;
+    max-width:420px;
+    position:relative;
+  }
+
+  .screen{
+    display:none;
+    animation: rise .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .screen.active{ display:block; }
+
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(14px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border: 1px solid rgba(181,123,255,0.25);
+    border-radius: var(--radius);
+    padding: var(--pad);
+    backdrop-filter: blur(6px);
+  }
+
+  /* ---------- Header / Wordmark ---------- */
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom: 18px;
+  }
+  .brand .mark{
+    font-family:'Sora', sans-serif;
+    font-weight:800;
+    font-size: 30px;
+    letter-spacing: -0.5px;
+    background: linear-gradient(120deg, #fff, var(--violet-bright) 60%, var(--violet-core));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brand .tag{
+    font-size: 12px;
+    color: var(--lilac);
+    opacity:.75;
+    font-weight:500;
+  }
+
+  .eyebrow{
+    font-size: 13px;
+    color: var(--violet-bright);
+    font-weight:600;
+    margin-bottom:6px;
+  }
+
+  p.lead{
+    color: var(--lilac);
+    opacity:.85;
+    line-height:1.5;
+    font-size:14.5px;
+  }
+
+  /* ---------- Form ---------- */
+  .field{
+    margin-top:16px;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    color: var(--lilac);
+    margin-bottom:6px;
+    font-weight:500;
+  }
+  .field input{
+    width:100%;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(181,123,255,0.3);
+    border-radius: 12px;
+    padding: 13px 14px;
+    color: var(--paper);
+    font-size:15px;
+    font-family:'Inter',sans-serif;
+    outline:none;
+    transition: border-color .2s, background .2s;
+  }
+  .field input::placeholder{ color: rgba(230,217,255,0.35); }
+  .field input:focus{
+    border-color: var(--violet-bright);
+    background: rgba(255,255,255,0.09);
+  }
+  .field.error input{ border-color: var(--bad); }
+  .field .errmsg{
+    display:none;
+    font-size:12px;
+    color: var(--bad);
+    margin-top:5px;
+  }
+  .field.error .errmsg{ display:block; }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    width:100%;
+    border:none;
+    border-radius: 14px;
+    padding: 15px;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    cursor:pointer;
+    margin-top: 22px;
+    transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn-primary{
+    background: linear-gradient(120deg, var(--violet-core), var(--violet-bright));
+    color: #0b0713;
+    box-shadow: 0 10px 26px -10px rgba(123,47,247,0.7);
+  }
+  .btn-ghost{
+    background: transparent;
+    border: 1.5px solid rgba(181,123,255,0.4);
+    color: var(--paper);
+    margin-top:12px;
+  }
+
+  /* ---------- Instrucciones ---------- */
+  .rules{
+    list-style:none;
+    margin: 18px 0 0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .rules li{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    font-size:14px;
+    color: var(--lilac);
+    line-height:1.4;
+  }
+  .rules .dot{
+    flex:0 0 auto;
+    width:8px; height:8px;
+    border-radius:50%;
+    margin-top:6px;
+    background: var(--violet-bright);
+    box-shadow: 0 0 10px var(--violet-bright);
+  }
+  .rules strong{ color:#fff; }
+
+  .timer-callout{
+    margin-top:18px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background: rgba(123,47,247,0.15);
+    border: 1px solid rgba(181,123,255,0.35);
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .timer-callout .num{
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size: 26px;
+    color: var(--violet-bright);
+    line-height:1;
+  }
+  .timer-callout .txt{
+    font-size:12.5px;
+    color: var(--lilac);
+  }
+
+  /* ---------- Trivia ---------- */
+  .quiz-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 16px;
+  }
+  .progress-dots{
+    display:flex;
+    gap:6px;
+  }
+  .progress-dots span{
+    width:7px;height:7px;border-radius:50%;
+    background: rgba(255,255,255,0.18);
+    transition: background .2s, transform .2s;
+  }
+  .progress-dots span.done{ background: var(--violet-bright); }
+  .progress-dots span.now{ background:#fff; transform: scale(1.3); }
+
+  .ring-wrap{
+    position:relative;
+    width:46px; height:46px;
+  }
+  .ring-wrap svg{ transform: rotate(-90deg); }
+  .ring-bg{ fill:none; stroke: rgba(255,255,255,0.12); stroke-width:4; }
+  .ring-fg{
+    fill:none; stroke: var(--violet-bright); stroke-width:4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke .2s;
+  }
+  .ring-num{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Sora',sans-serif; font-weight:700; font-size:14px;
+  }
+
+  .qcount{
+    font-size:12px; color: var(--lilac); opacity:.7; margin-bottom:4px;
+    font-weight:600;
+  }
+  .question{
+    font-family:'Sora',sans-serif;
+    font-size: 19px;
+    font-weight:700;
+    line-height:1.35;
+    margin: 4px 0 18px;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .opt{
+    text-align:left;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(181,123,255,0.22);
+    color: var(--paper);
+    border-radius: 13px;
+    padding: 13px 14px;
+    font-size:14.5px;
+    font-family:'Inter',sans-serif;
+    font-weight:500;
+    cursor:pointer;
+    transition: border-color .15s, background .15s, transform .1s;
+  }
+  .opt:active{ transform: scale(0.98); }
+  .opt.correct{
+    background: rgba(53,212,146,0.18);
+    border-color: var(--ok);
+    color:#c8ffe8;
+  }
+  .opt.wrong{
+    background: rgba(255,92,122,0.18);
+    border-color: var(--bad);
+    color:#ffd7de;
+  }
+  .opt.disabled{ pointer-events:none; opacity:.65; }
+  .opt.disabled.correct, .opt.disabled.wrong{ opacity:1; }
+
+  /* ---------- Resultados ---------- */
+  .score-hero{
+    text-align:center;
+    padding: 10px 0 6px;
+  }
+  .score-hero .big{
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size: 58px;
+    line-height:1;
+    background: linear-gradient(120deg, #fff, var(--violet-bright));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .score-hero .of{
+    font-size:14px; color:var(--lilac); opacity:.75; margin-top:4px;
+  }
+
+  .stats-row{
+    display:flex;
+    gap:10px;
+    margin-top:18px;
+  }
+  .stat{
+    flex:1;
+    background: rgba(255,255,255,0.05);
+    border:1px solid rgba(181,123,255,0.22);
+    border-radius:14px;
+    padding: 12px;
+    text-align:center;
+  }
+  .stat .v{ font-family:'Sora',sans-serif; font-weight:700; font-size:18px; }
+  .stat .l{ font-size:11px; color:var(--lilac); opacity:.7; margin-top:2px; }
+
+  .confirm-box{
+    margin-top:18px;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    background: linear-gradient(120deg, rgba(123,47,247,0.25), rgba(181,123,255,0.1));
+    border:1px solid rgba(181,123,255,0.4);
+    border-radius:14px;
+    padding:14px;
+  }
+  .confirm-box .ico{
+    flex:0 0 auto;
+    width:22px;height:22px;
+    border-radius:50%;
+    background: var(--ok);
+    color:#04331e;
+    font-weight:800;
+    font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .confirm-box p{
+    margin:0;
+    font-size:13.5px;
+    line-height:1.4;
+    color: var(--paper);
+  }
+
+  footer.note{
+    text-align:center;
+    font-size:11px;
+    color: rgba(230,217,255,0.4);
+    margin-top:16px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .screen{ animation:none; }
+    .ring-fg{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ 1. REGISTRO ============ -->
+  <section class="screen active" id="screen-registro">
+    <div class="card">
+      <div class="brand"><span class="mark">Trivia BTS</span><span class="tag">Sorteo ARMY</span></div>
+      <div class="eyebrow">Registro</div>
+      <p class="lead">Completa tus datos para participar en el sorteo de la entrada. Al final del juego, tu puntaje quedará vinculado a tu registro.</p>
+
+      <form id="form-registro" novalidate>
+        <div class="field" id="field-nombre">
+          <label for="nombre">Nombre completo</label>
+          <input type="text" id="nombre" placeholder="Ej. Camila Rodríguez" autocomplete="name">
+          <div class="errmsg">Escribe tu nombre completo.</div>
+        </div>
+
+        <div class="field" id="field-ig">
+          <label for="ig">Usuario de Instagram</label>
+          <input type="text" id="ig" placeholder="@tuusuario" autocomplete="off">
+          <div class="errmsg">Ingresa tu usuario de Instagram (usaremos esto para contactarte si ganas).</div>
+        </div>
+
+        <div class="field" id="field-contacto">
+          <label for="contacto">Teléfono o correo</label>
+          <input type="text" id="contacto" placeholder="+51 999 999 999 o tu@correo.com" autocomplete="tel">
+          <div class="errmsg">Ingresa un teléfono o correo válido.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Continuar</button>
+      </form>
+    </div>
+    <footer class="note">Tus datos solo se usan para gestionar el sorteo.</footer>
+  </section>
+
+  <!-- ============ 2. INSTRUCCIONES ============ -->
+  <section class="screen" id="screen-instrucciones">
+    <div class="card">
+      <div class="brand"><span class="mark">Trivia BTS</span><span class="tag">Cómo funciona</span></div>
+      <div class="eyebrow">Reglas del sorteo</div>
+      <p class="lead">Responde 5 preguntas sobre BTS. Cuanto mejor tu puntaje, mejores tus chances de ganar la entrada — pero todo registro completo entra al sorteo.</p>
+
+      <ul class="rules">
+        <li><span class="dot"></span><span><strong>5 preguntas</strong> de opción múltiple sobre la historia, discografía e integrantes de BTS.</span></li>
+        <li><span class="dot"></span><span>Selecciona <strong>una sola respuesta</strong> por pregunta. Verás al instante si acertaste.</span></li>
+        <li><span class="dot"></span><span>Tu <strong>puntaje final</strong> y el nombre registrado quedan guardados para el sorteo.</span></li>
+        <li><span class="dot"></span><span>El ganador será contactado por el <strong>Instagram</strong> que registraste.</span></li>
+      </ul>
+
+      <div class="timer-callout">
+        <div class="num">15s</div>
+        <div class="txt">Tienes <strong>15 segundos por pregunta</strong>. Si el tiempo se agota, la pregunta se marca como incorrecta y avanza sola a la siguiente.</div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-empezar">¡Iniciar Juego!</button>
+    </div>
+  </section>
+
+  <!-- ============ 3. TRIVIA ============ -->
+  <section class="screen" id="screen-trivia">
+    <div class="card">
+      <div class="quiz-top">
+        <div class="progress-dots" id="dots"></div>
+        <div class="ring-wrap">
+          <svg width="46" height="46" viewBox="0 0 46 46">
+            <circle class="ring-bg" cx="23" cy="23" r="19"></circle>
+            <circle class="ring-fg" id="ring" cx="23" cy="23" r="19" stroke-dasharray="119.4" stroke-dashoffset="0"></circle>
+          </svg>
+          <div class="ring-num" id="ring-num">15</div>
+        </div>
+      </div>
+
+      <div class="qcount" id="qcount">Pregunta 1 de 5</div>
+      <h2 class="question" id="question-text">—</h2>
+      <div class="options" id="options"></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. RESULTADOS ============ -->
+  <section class="screen" id="screen-resultados">
+    <div class="card">
+      <div class="brand"><span class="mark">Trivia BTS</span><span class="tag">Resultado</span></div>
+      <div class="score-hero">
+        <div class="big" id="score-big">0/5</div>
+        <div class="of" id="score-sub">respuestas correctas</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat"><div class="v" id="stat-correct">0</div><div class="l">Correctas</div></div>
+        <div class="stat"><div class="v" id="stat-time">0s</div><div class="l">Tiempo total</div></div>
+        <div class="stat"><div class="v" id="stat-name">—</div><div class="l">Participante</div></div>
+      </div>
+
+      <div class="confirm-box">
+        <div class="ico">✓</div>
+        <p>¡Tus datos y puntuación han sido registrados para el sorteo de la entrada! Te contactaremos por Instagram si resultas ganador.</p>
+      </div>
+
+      <button class="btn btn-primary" id="btn-compartir">Compartir mi resultado</button>
+      <button class="btn btn-ghost" id="btn-reiniciar">Jugar de nuevo</button>
+    </div>
+    <footer class="note">Gracias por participar — ¡mucha suerte! 💜</footer>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Datos de preguntas ---------- */
+  const QUESTIONS = [
+    {
+      q: "¿En qué año debutó oficialmente BTS?",
+      options: ["2010", "2013", "2015", "2017"],
+      correct: 1
+    },
+    {
+      q: "¿Cuántos integrantes conforman BTS?",
+      options: ["5", "6", "7", "9"],
+      correct: 2
+    },
+    {
+      q: "¿Cómo se llama oficialmente el fandom de BTS?",
+      options: ["BLINK", "ARMY", "ONCE", "EXO-L"],
+      correct: 1
+    },
+    {
+      q: "¿Cuál fue el primer sencillo de BTS cantado completamente en inglés?",
+      options: ["Butter", "Boy With Luv", "Dynamite", "ON"],
+      correct: 2
+    },
+    {
+      q: "¿Quién es el líder de BTS?",
+      options: ["Jin", "Suga", "V", "RM"],
+      correct: 3
+    }
+  ];
+
+  const TIME_PER_Q = 15;
+
+  /* ---------- Estado ---------- */
+  let currentQ = 0;
+  let score = 0;
+  let timeLeft = TIME_PER_Q;
+  let timerId = null;
+  let totalElapsedMs = 0;
+  let quizStartTime = 0;
+  let locked = false;
+  let participant = { nombre:"", ig:"", contacto:"" };
+
+  /* ---------- Navegación de pantallas ---------- */
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    window.scrollTo(0,0);
+  }
+
+  /* ---------- Pantalla 1: Registro ---------- */
+  const form = document.getElementById("form-registro");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    let valid = true;
+
+    const nombre = document.getElementById("nombre").value.trim();
+    const ig = document.getElementById("ig").value.trim();
+    const contacto = document.getElementById("contacto").value.trim();
+
+    const fNombre = document.getElementById("field-nombre");
+    const fIg = document.getElementById("field-ig");
+    const fContacto = document.getElementById("field-contacto");
+
+    [fNombre, fIg, fContacto].forEach(f => f.classList.remove("error"));
+
+    if (nombre.length < 3 || !nombre.includes(" ")) {
+      fNombre.classList.add("error");
+      valid = false;
+    }
+    const igClean = ig.replace(/^@/, "");
+    if (igClean.length < 2 || /\s/.test(igClean)) {
+      fIg.classList.add("error");
+      valid = false;
+    }
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contacto);
+    const isPhone = /^[0-9+\s().-]{6,}$/.test(contacto);
+    if (!(isEmail || isPhone)) {
+      fContacto.classList.add("error");
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    participant = { nombre, ig: "@" + igClean, contacto };
+    showScreen("screen-instrucciones");
+  });
+
+  /* ---------- Pantalla 2: Instrucciones ---------- */
+  document.getElementById("btn-empezar").addEventListener("click", function(){
+    startQuiz();
+  });
+
+  /* ---------- Pantalla 3: Trivia ---------- */
+  const dotsEl = document.getElementById("dots");
+  const qcountEl = document.getElementById("qcount");
+  const questionEl = document.getElementById("question-text");
+  const optionsEl = document.getElementById("options");
+  const ringEl = document.getElementById("ring");
+  const ringNumEl = document.getElementById("ring-num");
+  const RING_CIRC = 2 * Math.PI * 19;
+
+  function buildDots(){
+    dotsEl.innerHTML = "";
+    QUESTIONS.forEach((_, i) => {
+      const d = document.createElement("span");
+      dotsEl.appendChild(d);
+    });
+  }
+
+  function updateDots(){
+    const dots = dotsEl.children;
+    for (let i=0;i<dots.length;i++){
+      dots[i].classList.remove("now","done");
+      if (i < currentQ) dots[i].classList.add("done");
+      else if (i === currentQ) dots[i].classList.add("now");
+    }
+  }
+
+  function startQuiz(){
+    currentQ = 0;
+    score = 0;
+    quizStartTime = Date.now();
+    buildDots();
+    showScreen("screen-trivia");
+    loadQuestion();
+  }
+
+  function loadQuestion(){
+    locked = false;
+    const item = QUESTIONS[currentQ];
+    qcountEl.textContent = `Pregunta ${currentQ+1} de ${QUESTIONS.length}`;
+    questionEl.textContent = item.q;
+    updateDots();
+
+    optionsEl.innerHTML = "";
+    item.options.forEach((opt, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "opt";
+      btn.type = "button";
+      btn.textContent = opt;
+      btn.addEventListener("click", () => selectAnswer(idx));
+      optionsEl.appendChild(btn);
+    });
+
+    startTimer();
+  }
+
+  function startTimer(){
+    clearInterval(timerId);
+    timeLeft = TIME_PER_Q;
+    ringEl.style.stroke = "var(--violet-bright)";
+    updateRing();
+    timerId = setInterval(() => {
+      timeLeft--;
+      updateRing();
+      if (timeLeft <= 0){
+        clearInterval(timerId);
+        handleTimeout();
+      }
+    }, 1000);
+  }
+
+  function updateRing(){
+    ringNumEl.textContent = Math.max(timeLeft,0);
+    const fraction = timeLeft / TIME_PER_Q;
+    ringEl.style.strokeDasharray = RING_CIRC;
+    ringEl.style.strokeDashoffset = RING_CIRC * (1 - fraction);
+    if (timeLeft <= 5) ringEl.style.stroke = "var(--bad)";
+  }
+
+  function selectAnswer(idx){
+    if (locked) return;
+    locked = true;
+    clearInterval(timerId);
+    revealAnswer(idx);
+  }
+
+  function handleTimeout(){
+    if (locked) return;
+    locked = true;
+    revealAnswer(null);
+  }
+
+  function revealAnswer(chosenIdx){
+    const item = QUESTIONS[currentQ];
+    const optButtons = optionsEl.querySelectorAll(".opt");
+
+    optButtons.forEach((btn, idx) => {
+      btn.classList.add("disabled");
+      if (idx === item.correct) btn.classList.add("correct");
+      if (chosenIdx !== null && idx === chosenIdx && idx !== item.correct) btn.classList.add("wrong");
+    });
+
+    if (chosenIdx === item.correct) score++;
+
+    setTimeout(() => {
+      currentQ++;
+      if (currentQ < QUESTIONS.length){
+        loadQuestion();
+      } else {
+        finishQuiz();
+      }
+    }, 1100);
+  }
+
+  /* ---------- Pantalla 4: Resultados ---------- */
+  function finishQuiz(){
+    totalElapsedMs = Date.now() - quizStartTime;
+    const totalSeconds = Math.round(totalElapsedMs / 1000);
+
+    document.getElementById("score-big").textContent = `${score}/${QUESTIONS.length}`;
+    document.getElementById("stat-correct").textContent = score;
+    document.getElementById("stat-time").textContent = `${totalSeconds}s`;
+    document.getElementById("stat-name").textContent = participant.nombre.split(" ")[0] || "—";
+
+    const subEl = document.getElementById("score-sub");
+    if (score === QUESTIONS.length) subEl.textContent = "¡Puntaje perfecto! 💜";
+    else if (score >= 3) subEl.textContent = "¡Muy buen ARMY!";
+    else subEl.textContent = "respuestas correctas";
+
+    showScreen("screen-resultados");
+  }
+
+  document.getElementById("btn-reiniciar").addEventListener("click", function(){
+    showScreen("screen-instrucciones");
+  });
+
+  document.getElementById("btn-compartir").addEventListener("click", async function(){
+    const text = `Saqué ${score}/${QUESTIONS.length} en la Trivia BTS y ya estoy participando en el sorteo de la entrada 💜 #BTSxARMY`;
+    if (navigator.share){
+      try {
+        await navigator.share({ title: "Trivia BTS", text });
+      } catch(e){ /* usuario canceló */ }
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById("btn-compartir");
+        const original = btn.textContent;
+        btn.textContent = "¡Copiado! Pégalo donde quieras";
+        setTimeout(() => { btn.textContent = original; }, 2000);
+      } catch(e){
+        alert(text);
+      }
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
